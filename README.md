@@ -1,187 +1,175 @@
-# LangChain 中文入门教程
+# Hướng dẫn cơ bản về LangChain
 
-> 为了便于阅读，已生成gitbook：[https://liaokong.gitbook.io/llm-kai-fa-jiao-cheng/](https://liaokong.gitbook.io/llm-kai-fa-jiao-cheng/)
+> Để đọc dễ dàng, đã tạo gitbook: [https://liaokong.gitbook.io/llm-kai-fa-jiao-cheng/](https://liaokong.gitbook.io/llm-kai-fa-jiao-cheng/)
 >
-> github地址：[https://github.com/liaokongVFX/LangChain-Chinese-Getting-Started-Guide](https://github.com/liaokongVFX/LangChain-Chinese-Getting-Started-Guide)
+> Địa chỉ github: [https://github.com/liaokongVFX/LangChain-Chinese-Getting-Started-Guide](https://github.com/liaokongVFX/LangChain-Chinese-Getting-Started-Guide)
 
-> 因为langchain库一直在飞速更新迭代，但该文档写与4月初，并且我个人精力有限，所以colab里面的代码有可能有些已经过时。如果有运行失败的可以先搜索一下当前文档是否有更新，如文档也没更新欢迎提issue，或者修复后直接提pr，感谢~
+> Vì thư viện langchain luôn được cập nhật và phát triển nhanh chóng, nhưng tài liệu này được viết vào đầu tháng 4 và tôi có hạn về thời gian và năng lượng, vì vậy mã trong colab có thể đã lỗi thời. Nếu có lỗi khi chạy, bạn có thể tìm kiếm xem tài liệu hiện tại có cập nhật hay không, nếu không, xin vui lòng tạo issue, hoặc sửa lỗi và tạo pull request trực tiếp. Cảm ơn ~
 
-> 加了个 [CHANGELOG](CHANGELOG.md),更新了新的内容我会写在这里，方便之前看过的朋友快速查看新的更新内容
+> Tôi đã thêm một [CHANGELOG](CHANGELOG.md), tôi sẽ viết các nội dung mới ở đây để người đọc cũ có thể nhanh chóng xem các cập nhật mới
 
-> 如果想把 OPENAI API 的请求根路由修改成自己的代理地址，可以通过设置环境变量 “OPENAI\_API\_BASE” 来进行修改。
+> Nếu bạn muốn thay đổi địa chỉ gốc của yêu cầu API OPENAI thành địa chỉ proxy của riêng mình, bạn có thể thay đổi bằng cách thiết lập biến môi trường "OPENAI_API_BASE".
 >
-> 相关参考代码：[https://github.com/openai/openai-python/blob/d6fa3bfaae69d639b0dd2e9251b375d7070bbef1/openai/\_\_init\_\_.py#L48](https://github.com/openai/openai-python/blob/d6fa3bfaae69d639b0dd2e9251b375d7070bbef1/openai/\_\_init\_\_.py#L48)
+> Mã tham chiếu liên quan: [https://github.com/openai/openai-python/blob/d6fa3bfaae69d639b0dd2e9251b375d7070bbef1/openai/\_\_init\_\_.py#L48](https://github.com/openai/openai-python/blob/d6fa3bfaae69d639b0dd2e9251b375d7070bbef1/openai/\_\_init\_\_.py#L48)
 >
-> 或在初始化OpenAI相关模型对象时，传入“openai\_api\_base” 变量。
+> Hoặc khi khởi tạo các đối tượng mô hình liên quan đến OpenAI, hãy truyền biến "openai_api_base".
 >
-> 相关参考代码：[https://github.com/hwchase17/langchain/blob/master/langchain/llms/openai.py#L148](https://github.com/hwchase17/langchain/blob/master/langchain/llms/openai.py#L148)
+> Mã tham chiếu liên quan: [https://github.com/hwchase17/langchain/blob/master/langchain/llms/openai.py#L148](https://github.com/hwchase17/langchain/blob/master/langchain/llms/openai.py#L148)
 
-## 介绍
+## Giới thiệu
 
-众所周知 OpenAI 的 API 无法联网的，所以如果只使用自己的功能实现联网搜索并给出回答、总结 PDF 文档、基于某个 Youtube 视频进行问答等等的功能肯定是无法实现的。所以，我们来介绍一个非常强大的第三方开源库：`LangChain` 。
+Mọi người đều biết rằng API của OpenAI không thể kết nối với Internet, vì vậy việc chỉ sử dụng các chức năng của riêng mình để tìm kiếm và trả lời, tóm tắt tài liệu PDF, trả lời câu hỏi dựa trên video YouTube... sẽ không thể thực hiện được. Vì vậy, chúng ta hãy giới thiệu một thư viện mã nguồn mở rất mạnh mẽ: "LangChain".
 
-> 文档地址：https://python.langchain.com/en/latest/
+> Tài liệu: https://python.langchain.com/en/latest/
 
-这个库目前非常活跃，每天都在迭代，已经有 22k 的 star，更新速度飞快。
+Thư viện này hiện tại rất sôi động, được phát triển hàng ngày và đã có 22k star, tốc độ cập nhật vượt bậc.
 
-LangChain 是一个用于开发由语言模型驱动的应用程序的框架。他主要拥有 2 个能力：
+LangChain là một framework dùng để phát triển các ứng dụng được dẫn dắt bởi các mô hình ngôn ngữ. Nó có 2 khả năng chính:
 
-1. 可以将 LLM 模型与外部数据源进行连接
-2. 允许与 LLM 模型进行交互
+1. Kết nối mô hình LLM với các nguồn dữ liệu bên ngoài
+2. Cho phép tương tác với mô hình LLM
 
-> LLM 模型：Large Language Model，大型语言模型
+> LLM Model: Large Language Model, mô hình ngôn ngữ lớn
 
 ##
 
-## 基础功能
+## Các tính năng cơ bản
 
-LLM 调用
+Gọi LLM
 
-* 支持多种模型接口，比如 OpenAI、Hugging Face、AzureOpenAI ...
-* Fake LLM，用于测试
-* 缓存的支持，比如 in-mem（内存）、SQLite、Redis、SQL
-* 用量记录
-* 支持流模式（就是一个字一个字的返回，类似打字效果）
+- Hỗ trợ nhiều giao diện mô hình, như OpenAI, Hugging Face, AzureOpenAI ...
+- LLM giả, dùng để kiểm tra
+- Hỗ trợ bộ nhớ đệm, ví dụ như in-mem (trong bộ nhớ), SQLite, Redis, SQL
+- Ghi nhật ký việc sử dụng
+- Hỗ trợ chế độ luồng (trả về từng ký tự, tương tự như hiệu ứng gõ máy)
 
-Prompt管理，支持各种自定义模板
+Quản lý Prompt, hỗ trợ các mẫu tự tùy chỉnh
 
-拥有大量的文档加载器，比如 Email、Markdown、PDF、Youtube ...
+Có nhiều trình tải tài liệu, ví dụ như Email, Markdown, PDF, Youtube ...
 
-对索引的支持
+Hỗ trợ các chỉ mục
 
-* 文档分割器
-* 向量化
-* 对接向量存储与搜索，比如 Chroma、Pinecone、Qdrand
+- Trình chia tài liệu
+- Vector hóa
+- Kết nối và tìm kiếm theo vector, ví dụ như Chroma, Pinecone, Qdrand
 
 Chains
 
-* LLMChain
-* 各种工具Chain
-* LangChainHub
+- LLMChain
+- Các Chain công cụ khác nhau
+- LangChainHub
 
-## 必知概念
+## Khái niệm cần biết
 
-相信大家看完上面的介绍多半会一脸懵逼。不要担心，上面的概念其实在刚开始学的时候不是很重要，当我们讲完后面的例子之后，在回来看上面的内容会一下明白很多。
+Tôi tin rằng sau khi đọc những giới thiệu ở trên, hầu hết mọi người sẽ cảm thấy rất mơ hồ. Đừng lo, những khái niệm trên thực tế không quan trọng lắm khi bạn mới học, khi chúng tôi hoàn thành ví dụ phía sau, sau đó quay lại xem nội dung trên sẽ hiểu rõ hơn.
 
-但是，这里有几个概念是必须知道的。
+Tuy nhiên, có một số khái niệm bạn phải biết.
 
 ##
 
-### Loader 加载器
+### Loader (Trình tải)
 
-顾名思义，这个就是从指定源进行加载数据的。比如：文件夹 `DirectoryLoader`、Azure 存储 `AzureBlobStorageContainerLoader`、CSV文件 `CSVLoader`、印象笔记 `EverNoteLoader`、Google网盘 `GoogleDriveLoader`、任意的网页 `UnstructuredHTMLLoader`、PDF `PyPDFLoader`、S3 `S3DirectoryLoader`/`S3FileLoader`、
-
-Youtube `YoutubeLoader` 等等，上面只是简单的进行列举了几个，官方提供了超级的多的加载器供你使用。
+Như tên gọi, đây là cách để tải dữ liệu từ nguồn được chỉ định. Ví dụ: Thư mục (`DirectoryLoader`), lưu trữ Azure (`AzureBlobStorageContainerLoader`), tệp CSV (`CSVLoader`), ứng dụng EverNote (`EverNoteLoader`), Google Drive (`GoogleDriveLoader`), trang web bất kỳ (`UnstructuredHTMLLoader`), PDF (`PyPDFLoader`), S3 (`S3DirectoryLoader`/`S3FileLoader`), YouTube (`YoutubeLoader`) vv. Trên chỉ là một số ví dụ đơn giản, LangChain cung cấp nhiều trình tải hơn để bạn sử dụng.
 
 > https://python.langchain.com/docs/modules/data_connection/document_loaders.html
 
 ###
 
-### Document 文档
+### Tài liệu 文档
 
-当使用loader加载器读取到数据源后，数据源需要转换成 Document 对象后，后续才能进行使用。
+Khi sử dụng trình nạp loader để đọc nguồn dữ liệu, nguồn dữ liệu cần được chuyển đổi thành đối tượng Document để có thể sử dụng tiếp.
 
-###
+### Cắt văn bản 分割文本
 
-### Text Spltters 文本分割
+Như tên gọi, cắt văn bản được sử dụng để cắt văn bản. Tại sao cần phải cắt văn bản? Vì mỗi lần chúng ta tiếp tục sử dụng văn bản như là prompt để gửi tới openai api, hoặc sử dụng chức năng nhúng của openai api, đều có ràng buộc về số ký tự.
 
-顾名思义，文本分割就是用来分割文本的。为什么需要分割文本？因为我们每次不管是做把文本当作 prompt 发给 openai api ，还是还是使用 openai api embedding 功能都是有字符限制的。
+Ví dụ, nếu chúng ta gửi một tệp PDF có 300 trang cho openai api để tóm tắt, chắc chắn nó sẽ thông báo quá giới hạn Token tối đa. Vì vậy, chúng ta cần sử dụng trình chia văn bản để chia văn bản mà chúng ta nhận từ loader.
 
-比如我们将一份300页的 pdf 发给 openai api，让他进行总结，他肯定会报超过最大 Token 错。所以这里就需要使用文本分割器去分割我们 loader 进来的 Document。
+### Vectorstores Cơ sở dữ liệu vector
 
-###
+Vì việc tìm kiếm liên quan đến dữ liệu thực chất là phép tính vector, vì vậy, cho dù chúng ta sử dụng chức năng nhúng của openai api hay truy vấn trực tiếp từ cơ sở dữ liệu vector, chúng ta cần chuyển đổi Document được tải vào thành vector để thực hiện tìm kiếm phép tính vector. Việc chuyển đổi thành vector cũng rất đơn giản, chỉ cần chúng ta lưu trữ dữ liệu vào cơ sở dữ liệu vector tương ứng, là có thể hoàn tất việc chuyển đổi vector.
 
-### Vectorstores 向量数据库
-
-因为数据相关性搜索其实是向量运算。所以，不管我们是使用 openai api embedding 功能还是直接通过向量数据库直接查询，都需要将我们的加载进来的数据 `Document` 进行向量化，才能进行向量运算搜索。转换成向量也很简单，只需要我们把数据存储到对应的向量数据库中即可完成向量的转换。
-
-官方也提供了很多的向量数据库供我们使用。
+Đội ngũ phát triển cũng đã đưa ra rất nhiều cơ sở dữ liệu vector cho chúng ta sử dụng.
 
 > https://python.langchain.com/en/latest/modules/indexes/vectorstores.html
 
-###
+### Chain Chuỗi
 
-### Chain 链
+Chúng ta có thể hiểu Chain như là nhiệm vụ. Một Chain là một nhiệm vụ, tất nhiên cũng có thể thực hiện nhiều chuỗi như một dãy chuỗi.
 
-我们可以把 Chain 理解为任务。一个 Chain 就是一个任务，当然也可以像链条一样，一个一个的执行多个链。
+### Agent Đại lý
 
-###
+Chúng ta có thể đơn giản hiểu rằng nó có thể động lực chọn và gọi chain hoặc công cụ có sẵn cho chúng ta.
 
-### Agent 代理
-
-我们可以简单的理解为他可以动态的帮我们选择和调用chain或者已有的工具。
-
-执行过程可以参考下面这张图:
+Quá trình thực hiện có thể xem trong hình sau:
 
 ![image-20230406213322739](doc/image-20230406213322739.png)
 
 ### Embedding
 
-用于衡量文本的相关性。这个也是 OpenAI API 能实现构建自己知识库的关键所在。
+Được sử dụng để đo lường sự tương quan giữa văn bản. Đây cũng là chìa khóa để xây dựng thư viện tri thức của riêng bạn trong OpenAI API.
 
-他相比 fine-tuning 最大的优势就是，不用进行训练，并且可以实时添加新的内容，而不用加一次新的内容就训练一次，并且各方面成本要比 fine-tuning 低很多。
+Ưu điểm lớn nhất của nó so với việc tinh chỉnh fine-tuning là không cần phải huấn luyện và có thể thêm nội dung mới một cách thời gian thực mà không cần huấn luyện lại mỗi khi thêm nội dung mới, và chi phí mặt khác thấp hơn nhiều so với việc tinh chỉnh fine-tuning.
 
-> 具体比较和选择可以参考这个视频：https://www.youtube.com/watch?v=9qq6HTr7Ocw
+> Để biết thêm so sánh và lựa chọn cụ thể, bạn có thể tham khảo video này: https://www.youtube.com/watch?v=9qq6HTr7Ocw
 
-##
+## Thực hành
 
-## 实战
+Dựa trên các khái niệm cần thiết ở trên, bạn đã có thể hiểu một phần về LangChain, nhưng có thể vẫn còn mơ hồ.
 
-通过上面的必备概念大家应该已经可以对 LangChain 有了一定的了解，但是可能还有有些懵。
+Điều này không sao, tôi tin sau khi hoàn thành các bài thực hành phía sau, bạn sẽ hoàn toàn hiểu nội dung trên và cảm nhận được sức mạnh thực sự của thư viện này.
 
-这都是小问题，我相信看完后面的实战，你们就会彻底的理解上面的内容，并且能感受到这个库的真正强大之处。
+Vì chúng ta đã tiến bộ lên OpenAI API, nên ví dụ phía sau của chúng tôi sẽ sử dụng LLM dựa trên Open AI, nhưng bạn có thể thay thế bằng mô hình LLM mà bạn cần dựa trên nhiệm vụ của bạn.
 
-因为我们 OpenAI API 进阶，所以我们后面的范例使用的 LLM 都是以Open AI 为例，后面大家可以根据自己任务的需要换成自己需要的 LLM 模型即可。
+Tất nhiên, ở cuối bài viết này, toàn bộ mã nguồn sẽ được lưu trữ dưới dạng tệp ipynb colab để cung cấp cho mọi người học.
 
-当然，在这篇文章的末尾，全部的全部代码都会被保存为一个 colab 的 ipynb 文件提供给大家来学习。
-
-> 建议大家按顺序去看每个例子，因为下一个例子会用到上一个例子里面的知识点。
+> Đề nghị bạn xem từng ví dụ theo thứ tự, vì ví dụ tiếp theo sẽ sử dụng các điểm kiến thức trong ví dụ trước đó.
 >
-> 当然，如果有看不懂的也不用担心，可以继续往后看，第一次学习讲究的是不求甚解。
+> Tất nhiên, nếu có điểm nào không hiểu, bạn có thể tiếp tục cố gắng hoặc tiếp tục đọc tiếp, lần đầu học là không cần hiểu rõ tận hưởng từ từ.
 
 ###
 
-### 完成一次问答
+### Hoàn thành một câu hỏi đáp
 
-第一个案例，我们就来个最简单的，用 LangChain 加载 OpenAI 的模型，并且完成一次问答。
+Ví dụ đầu tiên, chúng ta sẽ bắt đầu với một ví dụ đơn giản nhất, sử dụng LangChain để tải mô hình OpenAI và hoàn thành một câu hỏi đáp.
 
-在开始之前，我们需要先设置我们的 openai 的 key，这个 key 可以在用户管理里面创建，这里就不细说了。
+Trước khi bắt đầu, chúng ta cần thiết lập khóa openai của chúng ta, khóa này có thể được tạo trong phần quản lý người dùng, ở đây tôi sẽ không nói rõ hơn.
 
 ```python
 import os
-os.environ["OPENAI_API_KEY"] = '你的api key'
+os.environ["OPENAI_API_KEY"] = 'khóa API của bạn'
 ```
 
-然后，我们进行导入和执行
+Sau đó, chúng ta import và thực thi
 
 ```py
 from langchain.llms import OpenAI
 
 llm = OpenAI(model_name="text-davinci-003",max_tokens=1024)
-llm("怎么评价人工智能")
+llm("Đánh giá về trí tuệ nhân tạo")
 ```
 
 ![image-20230404232621517](doc/image-20230404232621517.png)
 
-这时，我们就可以看到他给我们的返回结果了，怎么样，是不是很简单。
+Lúc này, chúng ta có thể thấy kết quả trả về, như thế này thì dễ lắm.
 
-### 通过 Google 搜索并返回答案
+### Tìm kiếm trên Google và trả về câu trả lời
 
-接下来，我们就来搞点有意思的。我们来让我们的 OpenAI api 联网搜索，并返回答案给我们。
+Tiếp theo, chúng ta sẽ thử tạo một kết nối mạng với OpenAI API và trả về câu trả lời cho chúng ta.
 
-这里我们需要借助 Serpapi 来进行实现，Serpapi 提供了 google 搜索的 api 接口。
+Để làm điều này, chúng ta cần sử dụng Serpapi, một công cụ cung cấp API cho việc tìm kiếm trên Google.
 
-首先需要我们到 Serpapi 官网上注册一个用户，https://serpapi.com/ 并复制他给我们生成 api key。
+Trước tiên, bạn cần đăng ký một tài khoản trên trang web của Serpapi, tại địa chỉ https://serpapi.com/ và sao chép API key mà họ tạo cho bạn.
 
-然后我们需要像上面的 openai api key 一样设置到环境变量里面去。
+Sau đó, bạn cần thiết lập API key như đã làm với OpenAI API key ở trên bằng cách thêm nó vào các biến môi trường của bạn.
 
 ```python
 import os
-os.environ["OPENAI_API_KEY"] = '你的api key'
-os.environ["SERPAPI_API_KEY"] = '你的api key'
+os.environ["OPENAI_API_KEY"] = 'API key của bạn'
+os.environ["SERPAPI_API_KEY"] = 'API key của bạn'
 ```
 
-然后，开始编写我的代码
+Tiếp theo, chúng ta sẽ viết mã của mình.
 
 ```python
 from langchain.agents import load_tools
@@ -189,23 +177,23 @@ from langchain.agents import initialize_agent
 from langchain.llms import OpenAI
 from langchain.agents import AgentType
 
-# 加载 OpenAI 模型
+# Tải mô hình OpenAI
 llm = OpenAI(temperature=0,max_tokens=2048) 
 
- # 加载 serpapi 工具
+# Tải công cụ serpapi
 tools = load_tools(["serpapi"])
 
-# 如果搜索完想再计算一下可以这么写
+# Nếu bạn muốn tính toán sau khi tìm kiếm, bạn có thể sử dụng mã sau
 # tools = load_tools(['serpapi', 'llm-math'], llm=llm)
 
-# 如果搜索完想再让他再用python的print做点简单的计算，可以这样写
+# Nếu bạn muốn sử dụng Python print để thực hiện một số tính toán đơn giản sau khi tìm kiếm, bạn có thể sử dụng mã sau
 # tools=load_tools(["serpapi","python_repl"])
 
-# 工具加载后都需要初始化，verbose 参数为 True，会打印全部的执行详情
+# Sau khi tải công cụ, bạn cần khởi tạo chúng, tham số verbose = True sẽ hiển thị chi tiết về việc thực thi
 agent = initialize_agent(tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
 
-# 运行 agent
-agent.run("What's the date today? What great events have taken place today in history?")
+# Chạy agent
+agent.run("Hôm nay là ngày bao nhiêu? Có những sự kiện quan trọng nào đã diễn ra hôm nay trong lịch sử?")
 ```
 
 ![image-20230404234236982](doc/image-20230404234236982.png)
